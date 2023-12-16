@@ -59,12 +59,13 @@ const defaultLinearBorderGradientBorderWidth = {
 };
 
 const linearBorderGradientDirections = theme('linearBorderGradients.directions', defaultLinearBorderGradientDirections);
+const linearBackgroundGradientDirections = theme('linearBorderGradients.directions', defaultLinearBorderGradientDirections);
 const linearBorderGradientColors = theme('linearBorderGradients.colors', defaultLinearBorderGradientColors);
 const linearBorderGradientBackgroundColor = theme('linearBorderGradients.background', defaultLinearBorderGradientBackgroundColors);
 const linearBorderGradientBorderWidth = theme('linearBorderGradients.borders', defaultLinearBorderGradientBorderWidth);
 
-const linearBorderGradientSelector = function(directionKey, colorKey, backgroundKey) {
-  return `.${e(`border-gradient-${directionKey}-${colorKey}-${backgroundKey}`)}`;
+const linearBorderGradientSelector = function(directionKey, colorKey, backgroundDirectionKey, backgroundKey) {
+  return `.${e(`border-gradient-${directionKey}-${colorKey}-${backgroundDirectionKey}-${backgroundKey}`)}`;
 };
 
 const linearBorderGradientBorderSelector = function(borderKey) {
@@ -77,7 +78,8 @@ const linearBorderGradientValue = function(direction, colors) {
 };
 
 const linearBorderGradientBackgroundColorValue = function(gradientBackgroundColor) {
-  return `linear-gradient( to right, ${gradientBackgroundColor}, ${gradientBackgroundColor} )`;
+    const cssDefaultLinearBorderGradientDirections = ['to bottom', '180deg', '0.5turn', '200grad', '3.1416rad'];
+  return `linear-gradient(${_.includes(cssDefaultLinearBorderGradientDirections, direction) ? '' : `${direction}, `}${colors.join(', ')})`;
 };
 
 const linearBorderGradientBorderValue = function(border) {
@@ -91,18 +93,20 @@ const linearBorderGradientUtilities = (function() {
     if (!colors) {
       return; // continue
     }
-    _.forEach(flattenColorPalette(linearBorderGradientBackgroundColor), (gradientBackgroundColor, backgroundKey) => {
-      gradientBackgroundColor = _.tail(normalizeColors(gradientBackgroundColor, true));
-      if (!gradientBackgroundColor) {
+    _.forEach(flattenColorPalette(linearBorderGradientBackgroundColors), (gradientBackgroundColors, backgroundKey) => {
+      gradientBackgroundColors = normalizeColors(gradientBackgroundColors, true);
+      if (!gradientBackgroundColors) {
         return; // continue
       }
       _.forEach(linearBorderGradientDirections, (direction, directionKey) => {
+      _.forEach(linearBackgroundGradientDirections, (bgDirection, bgDirectionKey) => {
         utilities[linearBorderGradientSelector(directionKey, colorKey, backgroundKey)] = {
           background: 
-              `${linearBorderGradientBackgroundColorValue(gradientBackgroundColor)}, ${linearBorderGradientValue(direction, colors)}`,
+              `${linearBorderGradientValue(bgDirection, gradientBackgroundColors)}, ${linearBorderGradientValue(direction, colors)}`,
           backgroundClip: 'padding-box, border-box',
           backgroundOrigin: 'padding-box, border-box',
         };
+      });
       });
     });
   });
